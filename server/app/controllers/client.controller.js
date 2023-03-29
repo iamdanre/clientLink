@@ -51,7 +51,7 @@ exports.addClient = (req, res) => {
 
 exports.linkContact = (req, res) => {
   // get client and contact from request body and link them
-  Client.findByIdAndUpdate(req.params.clientId, { $push: { contacts: req.params.contactId } }, { new: true })
+  Client.findByIdAndUpdate(req.body.clientId, { $push: { linkedContacts: req.body.contactId } }, { new: true })
     .then(data => { res.status(200).send(data) })
     .catch(err => {
       res.status(500).send({ message: err.message || "An error occurred while linking contact to client." }); 
@@ -60,7 +60,12 @@ exports.linkContact = (req, res) => {
 
 // unlink contact from client
 exports.unlinkContact = (req, res) => {
-  res.status(200).send("Contact Unlinked");
+  // get client and contact from request body and unlink them
+  Client.findByIdAndUpdate(req.body.clientId, { $pull: { linkedContacts: req.body.contactId } }, { new: true })
+    .then(data => { res.status(200).send(data) })
+    .catch(err => {
+      res.status(500).send({ message: err.message || "An error occurred while unlinking contact from client." });
+    });
 }
 
 // Helper function that generates a unique client code for the given client name

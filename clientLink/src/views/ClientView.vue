@@ -13,7 +13,6 @@ import instance from '../main.js';
 
 const loading = ref(true);
 const createClientForm = ref(false);
-const linkContactForm = ref(false);
 const clients = ref([]);
 clientService.getAllClients().then((data) => {
   clients.value = data;
@@ -21,14 +20,7 @@ clientService.getAllClients().then((data) => {
   setTimeout(() => {
     loading.value = false;
   }, 850);
-  console.log(clients.value);
 });
-// const noContacts = ref(true);
-// contactService.getAllContacts().then((data) => {
-//   if (data.length > 0) {
-//     noContacts.value = false;
-//   }
-// });
 const createClient = async (fields) => {
   clientService.addClient(fields).then(
     (data) => {
@@ -62,24 +54,34 @@ const createClient = async (fields) => {
   );
 }
 const contacts = ref([]);
+const linkContactForm = ref(false);
+const unLinkContactForm = ref(false);
 const selectedContact = ref('');
+const selectedClient = ref('');
 contactService.getAllContacts().then((data) => {
   for (let i = 0; i < data.length; i++) {
-    let contact = { value: data[i]._id, label: data[i].name + ' ' + data[i].surname + ' (' + data[i].email + ')'};
+    let contact = { value: data[i]._id, label: data[i].name + ' ' + data[i].surname + ' (' + data[i].email + ')' };
     contacts.value.push(contact);
   }
-  console.log(contacts.value);
 });
 const linkContact = async (fields) => {
-  contactService.linkContact(fields).then(
+  clientService.linkContact(selectedClient.value.client._id, fields.contactId).then(
     (data) => {
-      console.log(data);
-      // find the client in the clients array
-      let client = clients.value.find((client) => client.id === data.clientId);
-      // add the contact to the client's linkedContacts array
-      client.linkedContacts.push(data.contactId);
+      // update the client in the clients array
+      for (let i = 0; i < clients.value.length; i++) {
+        if (clients.value[i]._id === data._id) {
+          clients.value[i] = data;
+        }
+      }
       reset('linkContactForm');
-      let message = `Contact ${data.contactId} linked to client ${data.clientId}`;
+      // find contact in contacts array
+      let contact;
+      for (let i = 0; i < contacts.value.length; i++) {
+        if (contacts.value[i].value === fields.contactId) {
+          contact = contacts.value[i];
+        }
+      }
+      let message = `${selectedClient.value.client.clientCode} linked to ${contact.label.split(' (')[0]}`;
       instance.success(message, {
         position: "bottom-left",
         timeout: 6000,
@@ -87,6 +89,41 @@ const linkContact = async (fields) => {
         transition: "scale",
       });
       linkContactForm.value = false;
+      selectedClient.value = '';
+      selectedContact.value = '';
+    },
+    (error) => {
+      console.log(error);
+    }
+  );
+}
+const unlinkContact = async (fields) => {
+  clientService.unlinkContact(selectedClient.value.client._id, fields.contactId).then(
+    (data) => {
+      // update the client in the clients array
+      for (let i = 0; i < clients.value.length; i++) {
+        if (clients.value[i]._id === data._id) {
+          clients.value[i] = data;
+        }
+      }
+      reset('unLinkContactForm');
+      // find contact in contacts array
+      let contact;
+      for (let i = 0; i < contacts.value.length; i++) {
+        if (contacts.value[i].value === fields.contactId) {
+          contact = contacts.value[i];
+        }
+      }
+      let message = `${selectedClient.value.client.clientCode} unlinked from ${contact.label.split(' (')[0]}`;
+      instance.success(message, {
+        position: "bottom-left",
+        timeout: 6000,
+        offset: "30px",
+        transition: "scale",
+      });
+      unLinkContactForm.value = false;
+      selectedClient.value = '';
+      selectedContact.value = '';
     },
     (error) => {
       console.log(error);
@@ -120,6 +157,15 @@ const linkContact = async (fields) => {
       </FormKit>
     </div>
 
+    <div class="unLinkContactForm" v-if="unLinkContactForm && !createClientForm">
+      <FormKit id="unlinkContactForm" type="form" @submit="unlinkContact" submit-label="Unlink Contact" :submit-attrs="{
+        inputClass: 'submit-button'
+      }" #default="{ value }">
+        <FormKit type="select" name="contactId" id="contactId" validation="required" label="Contact to unlink"
+          v-model="selectedContact" :options="contacts" help="Select contact" />
+      </FormKit>
+    </div>
+
     <div v-if="clients.length === 0 && !loading">
       <h1>No clients found</h1>
     </div>
@@ -134,9 +180,9 @@ const linkContact = async (fields) => {
           <td>{{ client.name }}</td>
           <td>{{ client.clientCode }}</td>
           <td class="centre">
-            <IconUnlink />
+            <IconUnlink @click="unLinkContactForm = true; selectedClient = { client }" />
             {{ client.linkedContacts.length }}
-            <IconLink @click="linkContactForm = true;" />
+            <IconLink @click="linkContactForm = true; selectedClient = { client }" />
           </td>
         </tr>
       </table>
@@ -207,6 +253,13 @@ td {
 }
 
 .linkContactForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.unLinkContactForm {
   display: flex;
   justify-content: center;
   align-items: center;
