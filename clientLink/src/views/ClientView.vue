@@ -43,7 +43,7 @@ const createClient = async (fields) => {
       let message = `${data.name} created with client code: ${data.clientCode}`;
       instance.success(message, {
         position: "bottom-left",
-        timeout: 6000,
+        timeout: 5000,
         offset: "30px",
         transition: "scale",
       });
@@ -63,7 +63,7 @@ const selectedClient = ref('');
 
 contactService.getAllContacts().then((data) => {
   for (let i = 0; i < data.length; i++) {
-    let contact = { value: data[i]._id, label: data[i].name + ' ' + data[i].surname + ' (' + data[i].email + ')' };
+    let contact = { value: data[i]._id, label: data[i].name + ' ' + data[i].surname + ' (' + data[i].email + ')', attrs: { disabled: false } };
     contacts.value.push(contact);
   }
 });
@@ -88,7 +88,7 @@ const linkContact = async (fields) => {
       let message = `${selectedClient.value.client.clientCode} linked to ${contact.label.split(' (')[0]}`;
       instance.success(message, {
         position: "bottom-left",
-        timeout: 6000,
+        timeout: 5000,
         offset: "30px",
         transition: "scale",
       });
@@ -103,7 +103,6 @@ const linkContact = async (fields) => {
 }
 
 const unlinkContact = async (fields) => {
-  console.log(selectedClient.value.client);
   clientService.unlinkContact(selectedClient.value.client._id, fields.contactId).then(
     (data) => {
       // update the client in the clients array
@@ -123,7 +122,7 @@ const unlinkContact = async (fields) => {
       let message = `${selectedClient.value.client.clientCode} unlinked from ${contact.label.split(' (')[0]}`;
       instance.success(message, {
         position: "bottom-left",
-        timeout: 6000,
+        timeout: 5000,
         offset: "30px",
         transition: "scale",
       });
@@ -133,8 +132,42 @@ const unlinkContact = async (fields) => {
     },
     (error) => {
       console.log(error);
+      instance.error("Client not linked to contact", {
+        position: "bottom-left",
+        timeout: 5000,
+        offset: "30px",
+        transition: "scale",
+      });
     }
   );
+}
+
+function clickUnlink(client) {
+  selectedClient.value = { client };
+  contacts.value.forEach((contact) => {
+    if (client.linkedContacts.includes(contact.value)) {
+      contact.attrs.disabled = false;
+    } else {
+      contact.attrs.disabled = true;
+    }
+  });
+  linkContactForm.value = false;
+  unLinkContactForm.value = true;
+  createClientForm.value = false;
+}
+
+function clickLink(client) {
+  selectedClient.value = { client };
+  contacts.value.forEach((contact) => {
+    if (client.linkedContacts.includes(contact.value)) {
+      contact.attrs.disabled = true;
+    } else {
+      contact.attrs.disabled = false;
+    }
+  });
+  unLinkContactForm.value = false;
+  linkContactForm.value = true;
+  createClientForm.value = false;
 }
 
 </script>
@@ -173,7 +206,7 @@ const unlinkContact = async (fields) => {
     </div>
 
     <div v-if="clients.length === 0 && !loading">
-      <h1>No clients found</h1>
+      <h1>No client(s) found</h1>
     </div>
     <div v-else>
       <table v-if="!loading">
@@ -186,18 +219,18 @@ const unlinkContact = async (fields) => {
           <td>{{ client.name }}</td>
           <td>{{ client.clientCode }}</td>
           <td class="centre">
-            <IconUnlink @click="unLinkContactForm = true; selectedClient = { client }" />
+            <IconUnlink @click="clickUnlink(client)" />
             {{ client.linkedContacts.length }}
-            <IconLink @click="linkContactForm = true; selectedClient = { client }" />
+            <IconLink @click="clickLink(client)" />
           </td>
         </tr>
       </table>
     </div>
   </main>
-  <div v-if="!createClientForm" @click="createClientForm = true">
+  <div v-if="!createClientForm && !linkContactForm && !unLinkContactForm" @click="createClientForm = true">
     <IconPlus />
   </div>
-  <div v-else @click="createClientForm = false">
+  <div v-else @click="createClientForm = false; linkContactForm = false; unLinkContactForm = false;">
     <IconMinus />
   </div>
 </template>
@@ -270,11 +303,13 @@ td {
   justify-content: center;
   align-items: center;
   margin-top: 2rem;
+
   .submit-button {
     background-color: #F33A6A;
     margin-top: 1rem;
     margin-bottom: 1rem;
   }
+
   .submit-button:hover {
     background-color: darken(#F33A6A, 10%);
   }
@@ -301,7 +336,7 @@ td {
 .success {
   padding: 0.75em;
   border-radius: 0.5em;
-  background-color: lightgreen;
+  background-color: $green;
   margin: 1em 0;
 }
 </style>

@@ -16,16 +16,19 @@ export async function getAllClients() {
         return 0;
     });
 }
+
 export async function addClient(client) {
     const response = await axios
         .post(API_URL + '/clients/add', client)
     return response.data;
 }
+
 export async function linkContact(clientId, contactId) {
     const response = await axios
         .put(API_URL + '/clients/linkContact', { clientId, contactId })
     return response.data;
 }
+
 export async function unlinkContact(clientId, contactId) {
     const response = await axios
         .put(API_URL + '/clients/unlinkContact', { clientId, contactId })

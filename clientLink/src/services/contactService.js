@@ -15,19 +15,20 @@ export async function getAllContacts() {
         }
         return 0;
     });
-
-    return response.data;
 }
+
 export async function addContact(client) {
     const response = await axios
         .post(API_URL + '/contacts/add', client)
     return response.data;
 }
+
 export async function linkClient(clientId, contactId) {
     const response = await axios
         .put(API_URL + '/contacts/linkContact', { clientId, contactId })
     return response.data;
 }
+
 export async function unlinkClient(clientId, contactId) {
     const response = await axios
         .put(API_URL + '/contacts/unlinkContact', { clientId, contactId })

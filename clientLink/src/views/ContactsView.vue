@@ -3,8 +3,11 @@
 import { HollowDotsSpinner } from 'epic-spinners'
 import IconPlus from '../components/icons/IconPlus.vue';
 import IconMinus from '../components/icons/IconMinus.vue';
+import IconLink from '../components/icons/IconLink.vue';
+import IconUnlink from '../components/icons/IconUnlink.vue';
 import { ref } from 'vue';
 import * as contactService from '../services/contactService.js';
+import * as clientService from '../services/clientService.js';
 import { reset } from '@formkit/core';
 import instance from '../main.js';
 
@@ -17,8 +20,8 @@ contactService.getAllContacts().then((data) => {
   setTimeout(() => {
     loading.value = false;
   }, 850);
-  console.log(contacts.value);
 });
+
 const createContact = async (fields) => {
   contactService.addContact(fields).then(
     (data) => {
@@ -56,10 +59,129 @@ const createContact = async (fields) => {
     },
     (error) => {
       console.log(error);
+      if (error.response.status === 500) {
+        instance.error("Contact already exists", {
+          position: "bottom-left",
+          timeout: 5000,
+          offset: "30px",
+          transition: "scale",
+        });
+      }
     }
   );
 }
 
+const clients = ref([]);
+const linkClientForm = ref(false);
+const unLinkClientForm = ref(false);
+const selectedClient = ref('');
+const selectedContact = ref('');
+
+clientService.getAllClients().then((data) => {
+  for (let i = 0; i < data.length; i++) {
+    let client = { value: data[i]._id, label: data[i].name + " - " + data[i].clientCode, attrs: { disabled: false } };
+    clients.value.push(client);
+  }
+});
+
+const linkClient = async (fields) => {
+  contactService.linkClient(selectedContact.value.contact._id, fields.clientId).then(
+    (data) => {
+      // update the contact in the contacts array
+      for (let i = 0; i < contacts.value.length; i++) {
+        if (contacts.value[i]._id === data._id) {
+          contacts.value[i] = data;
+        }
+      }
+      reset('linkClientForm');
+      // find contact in contacts array
+      let client;
+      for (let i = 0; i < clients.value.length; i++) {
+        if (contacts.value[i].value === fields.clientId) {
+          client = contacts.value[i];
+        }
+      }
+      let message = `${selectedContact.value.contact.clientCode} linked to ${client.label.split(' (')[0]}`;
+      instance.success(message, {
+        position: "bottom-left",
+        timeout: 5000,
+        offset: "30px",
+        transition: "scale",
+      });
+      linkClientForm.value = false;
+      selectedContact.value = '';
+      selectedClient.value = '';
+    },
+    (error) => {
+      console.log(error);
+    }
+  );
+}
+
+const unLinkClient = async (fields) => {
+  contactService.unLinkClient(fields).then(
+    (data) => {
+      for (let i = 0; i < contacts.value.length; i++) {
+        if (contacts.value[i]._id === data._id) {
+          contacts.value[i] = data;
+        }
+      }
+      reset('unLinkClientForm');
+      // find client in clients array
+      let message = `${data.name} ${data.surname} unlinked from ${selectedClient.value.label}`;
+      instance.success(message, {
+        position: "top-right",
+        timeout: 5000,
+        offset: "30px",
+        transition: "scale",
+      });
+      unLinkClientForm.value = false;
+      selectedContact.value = '';
+      selectedClient.value = '';
+    },
+    (error) => {
+      console.log(error);
+      if (error.response.status === 500) {
+        instance.error("Contact not linked to client", {
+          position: "bottom-left",
+          timeout: 5000,
+          offset: "30px",
+          transition: "scale",
+        });
+      }
+    }
+  );
+}
+
+function clickUnlink(contact) {
+  selectedContact.value = { contact };
+  clients.value.forEach(client => {
+    if (contact.linkedClients.includes(client.value)) {
+      client.attrs.disabled = false;
+    } else {
+      client.attrs.disabled = true;
+    }
+  });
+  linkClientForm.value = false;
+  unLinkClientForm.value = true;
+  createContactForm.value = false;
+  createClientForm.value = false;
+}
+
+function clickLink(contact) {
+  selectedContact.value = { contact };
+  clients.value.forEach(client => {
+    if (contact.linkedClients.includes(client.value)) {
+      client.attrs.disabled = true;
+    } else {
+      client.attrs.disabled = false;
+    }
+  });
+  unLinkClientForm.value = false;
+  linkClientForm.value = true;
+  createContactForm.value = false;
+  createClientForm.value = false;
+}
 </script>
 
 <template>
@@ -80,13 +202,35 @@ const createContact = async (fields) => {
         </div>
         <FormKit type="email" name="email" id="contactEmail" validation="required:trim" label="Contact e-Mail"
           help="Enter e-Mail" />
+      </FormKit>
+    </div>
 
+    <div class="linkClientForm" v-if="linkClientForm && !createContactForm">
+      <FormKit id="linkClientForm" type="form" @submit="linkClient" submit-label="Link Client" :submit-attrs="{
+        inputClass: 'submit-button'
+      }">
+        <div id="inputFields">
+          <FormKit type="select" name="client" id="client" validation="required" label="Select Client"
+            :options="clients" />
+          <FormKit type="hidden" name="contact" id="contact" :value="selectedContact.contact._id" />
+        </div>
+      </FormKit>
+    </div>
 
+    <div class="unLinkClientForm" v-if="unLinkClientForm && !createContactForm">
+      <FormKit id="unLinkClientForm" type="form" @submit="unLinkClient" submit-label="Unlink Client" :submit-attrs="{
+        inputClass: 'submit-button'
+      }">
+        <div id="inputFields">
+          <FormKit type="select" name="client" id="client" validation="required" label="Select Client"
+            :options="clients" />
+          <FormKit type="hidden" name="contact" id="contact" :value="selectedContact.contact._id" />
+        </div>
       </FormKit>
     </div>
 
     <div v-if="contacts.length === 0 && !loading">
-      <h1>No contacts found</h1>
+      <h1>No contact(s) found</h1>
     </div>
     <div v-else>
       <table v-if="!loading">
@@ -100,15 +244,19 @@ const createContact = async (fields) => {
           <td>{{ contact.name }}</td>
           <td>{{ contact.surname }}</td>
           <td>{{ contact.email }}</td>
-          <td class="centre">{{ contact.linkedClients.length }}</td>
+          <td class="centre">
+            <IconUnlink @click="clickUnlink(contact)" />
+            {{ contact.linkedClients.length }}
+            <IconLink @click="clickLink(contact)" />
+          </td>
         </tr>
       </table>
     </div>
   </main>
-  <div v-if="!createContactForm" @click="createContactForm = true">
+  <div v-if="!createContactForm && !linkClientForm && !unLinkClientForm" @click="createContactForm = true">
     <IconPlus />
   </div>
-  <div v-else @click="createContactForm = false">
+  <div v-else @click="createContactForm = false; linkClientForm = false; unLinkClientForm = false">
     <IconMinus />
   </div>
 </template>
@@ -169,6 +317,30 @@ td {
   margin-top: 2rem;
 }
 
+.linkClientForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.unLinkClientForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+
+  .submit-button {
+    background-color: #F33A6A;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .submit-button:hover {
+    background-color: darken(#F33A6A, 10%);
+  }
+}
+
 .submit-button {
   background-color: $green;
   color: white;
@@ -190,7 +362,7 @@ td {
 .success {
   padding: 0.75em;
   border-radius: 0.5em;
-  background-color: lightgreen;
+  background-color: $green;
   margin: 1em 0;
 }
 

@@ -6,7 +6,7 @@ import { createAutoAnimatePlugin } from '@formkit/addons'
 
 import router from './router'
 import ToastPlugin from 'vue-toast-notification';
-import {useToast} from 'vue-toast-notification';
+import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 import './assets/main.css';
