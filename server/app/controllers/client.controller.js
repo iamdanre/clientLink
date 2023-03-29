@@ -1,5 +1,6 @@
 const db = require("../models");
 const Client = db.client;
+const Contact = db.contact;
 
 // get all clients from database
 exports.allClients = (req, res) => {
@@ -49,23 +50,47 @@ exports.addClient = (req, res) => {
     });
 }
 
+// link contact to client
 exports.linkContact = (req, res) => {
-  // get client and contact from request body and link them
   Client.findByIdAndUpdate(req.body.clientId, { $push: { linkedContacts: req.body.contactId } }, { new: true })
-    .then(data => { res.status(200).send(data) })
+    .then(data => {
+      res.status(200).send(data);
+      console.log("Contact linked successfully!");
+    })
     .catch(err => {
-      res.status(500).send({ message: err.message || "An error occurred while linking contact to client." }); 
+      res.status(500).send({ message: err.message || "An error occurred while linking contact to client." });
     });
+  // also link client to contact
+  Contact.findByIdAndUpdate(req.body.contactId, { $push: { linkedClients: req.body.clientId } }, { new: true })
+    .then(data => {
+      console.log("Client linked successfully!");
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message || "An error occurred while linking client to contact." });
+    }
+    );
 }
 
 // unlink contact from client
 exports.unlinkContact = (req, res) => {
-  // get client and contact from request body and unlink them
   Client.findByIdAndUpdate(req.body.clientId, { $pull: { linkedContacts: req.body.contactId } }, { new: true })
-    .then(data => { res.status(200).send(data) })
+    .then(data => {
+      Contact.findByIdAndUpdate(req.body.contactId, { $pull: { linkedClients: req.body.clientId } }, { new: true });
+      res.status(200).send(data);
+      console.log("Contact unlinked successfully!");
+    })
     .catch(err => {
       res.status(500).send({ message: err.message || "An error occurred while unlinking contact from client." });
     });
+  // also unlink client from contact
+  Contact.findByIdAndUpdate(req.body.contactId, { $pull: { linkedClients: req.body.clientId } }, { new: true })
+    .then(data => {
+      console.log("Client unlinked successfully!");
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message || "An error occurred while unlinking client from contact." });
+    }
+    );
 }
 
 // Helper function that generates a unique client code for the given client name

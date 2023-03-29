@@ -21,6 +21,7 @@ clientService.getAllClients().then((data) => {
     loading.value = false;
   }, 850);
 });
+
 const createClient = async (fields) => {
   clientService.addClient(fields).then(
     (data) => {
@@ -53,17 +54,20 @@ const createClient = async (fields) => {
     }
   );
 }
+
 const contacts = ref([]);
 const linkContactForm = ref(false);
 const unLinkContactForm = ref(false);
 const selectedContact = ref('');
 const selectedClient = ref('');
+
 contactService.getAllContacts().then((data) => {
   for (let i = 0; i < data.length; i++) {
     let contact = { value: data[i]._id, label: data[i].name + ' ' + data[i].surname + ' (' + data[i].email + ')' };
     contacts.value.push(contact);
   }
 });
+
 const linkContact = async (fields) => {
   clientService.linkContact(selectedClient.value.client._id, fields.contactId).then(
     (data) => {
@@ -97,7 +101,9 @@ const linkContact = async (fields) => {
     }
   );
 }
+
 const unlinkContact = async (fields) => {
+  console.log(selectedClient.value.client);
   clientService.unlinkContact(selectedClient.value.client._id, fields.contactId).then(
     (data) => {
       // update the client in the clients array
@@ -151,18 +157,18 @@ const unlinkContact = async (fields) => {
     <div class="linkContactForm" v-if="linkContactForm && !createClientForm">
       <FormKit id="linkContactForm" type="form" @submit="linkContact" submit-label="Link Contact" :submit-attrs="{
         inputClass: 'submit-button'
-      }" #default="{ value }">
+      }">
         <FormKit type="select" name="contactId" id="contactId" validation="required" label="Contact to link"
-          v-model="selectedContact" :options="contacts" help="Select contact" />
+          v-model="selectedContact" :options="contacts" help="Select contact" placeholder="Select contact" />
       </FormKit>
     </div>
 
     <div class="unLinkContactForm" v-if="unLinkContactForm && !createClientForm">
       <FormKit id="unlinkContactForm" type="form" @submit="unlinkContact" submit-label="Unlink Contact" :submit-attrs="{
         inputClass: 'submit-button'
-      }" #default="{ value }">
+      }">
         <FormKit type="select" name="contactId" id="contactId" validation="required" label="Contact to unlink"
-          v-model="selectedContact" :options="contacts" help="Select contact" />
+          v-model="selectedContact" :options="contacts" help="Select contact" placeholder="Select contact" />
       </FormKit>
     </div>
 
@@ -264,6 +270,14 @@ td {
   justify-content: center;
   align-items: center;
   margin-top: 2rem;
+  .submit-button {
+    background-color: #F33A6A;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  .submit-button:hover {
+    background-color: darken(#F33A6A, 10%);
+  }
 }
 
 .submit-button {
