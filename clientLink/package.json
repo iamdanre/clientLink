@@ -1,0 +1,27 @@
+{
+  "name": "clientlink",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "http-server dist -p 5173 -o -a localhost"
+  },
+  "dependencies": {
+    "@formkit/addons": "^0.16.4",
+    "@formkit/vue": "^1.0.0-beta.15",
+    "axios": "^1.3.4",
+    "epic-spinners": "^2.0.0",
+    "http-server": "^14.1.1",
+    "vue": "^3.2.47",
+    "vue-router": "^4.1.6",
+    "vue-toast-notification": "^3.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "sass": "^1.59.2",
+    "vite": "^4.1.4",
+    "vite-plugin-pwa": "^0.14.6"
+  }
+}
