@@ -40,7 +40,6 @@
 ## About The Project
 
 Recruiting exercise for a software developer position at <a href="https://www.bcity.me/">Binary City</a>.
-<br>
 <img src="images/screenshot.png" alt="Screenshot" width="100%" height="100%">
 <img src="images/screenshot2.png" alt="Screenshot" width="100%" height="100%">
 
