@@ -45,9 +45,9 @@ Recruiting exercise for a software developer position at <a href="https://www.bc
 
 ### Built With
 
-- [!Vue](https://vuejs.org)
-- [!Node](https://nodejs.org)
-- [!MongoDB](https://www.mongodb.com)
+- [Vue](https://vuejs.org)
+- [Node](https://nodejs.org)
+- [MongoDB](https://www.mongodb.com)
 
 <!-- GETTING STARTED -->
 
