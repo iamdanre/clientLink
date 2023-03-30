@@ -4,7 +4,7 @@
   <a href="https://github.com/iamdanre/clientLink">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
-  <h3 align="center">clientLink</h3>
+  <h3 align="center" style="color:#00bd7e">clientLink</h3>
 
 <p align="center">
     App to link clients and contacts.
@@ -58,19 +58,19 @@ To get a local copy up and running, install the dependencies and follow the inst
 
 ### Prerequisites
 
-- node.js
+-   node.js
 
     ```sh
     sudo apt install nodejs
     ```
 
-- npm
+-   npm
 
     ```sh
     npm install npm@latest -g
     ```
 
-- browser (preferably Chrome)
+-   browser (preferably Chrome)
 
 ### Installation
 
