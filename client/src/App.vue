@@ -9,7 +9,6 @@ import Header from './components/Header.vue'
 
     <div class="wrapper">
       <Header msg="clientLink" />
-
       <nav>
         <RouterLink to="/">Clients</RouterLink>
         <RouterLink to="/contacts">Contacts</RouterLink>

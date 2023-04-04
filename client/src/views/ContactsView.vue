@@ -50,7 +50,7 @@ const createContact = async (fields) => {
       reset('contactForm');
       let message = `${data.name} ${data.surname} created`;
       instance.success(message, {
-        position: "top-right",
+        position: "bottom-left",
         timeout: 5000,
         offset: "30px",
         transition: "scale",
@@ -85,6 +85,10 @@ clientService.getAllClients().then((data) => {
 });
 
 const linkClient = async (fields) => {
+
+   console.log(selectedContact);
+  console.log(selectedClient);
+
   contactService.linkClient(selectedContact.value.contact._id, fields.clientId).then(
     (data) => {
       // update the contact in the contacts array
@@ -97,11 +101,11 @@ const linkClient = async (fields) => {
       // find contact in contacts array
       let client;
       for (let i = 0; i < clients.value.length; i++) {
-        if (contacts.value[i].value === fields.clientId) {
-          client = contacts.value[i];
+        if (clients.value[i].value === fields.clientId) {
+          client = clients.value[i];
         }
       }
-      let message = `${selectedContact.value.contact.clientCode} linked to ${client.label.split(' (')[0]}`;
+      let message = `Linked to ${client.label.split(' (')[0]}`;
       instance.success(message, {
         position: "bottom-left",
         timeout: 5000,
@@ -119,18 +123,23 @@ const linkClient = async (fields) => {
 }
 
 const unLinkClient = async (fields) => {
-  contactService.unLinkClient(fields).then(
+
+  console.log(selectedContact);
+  console.log(selectedClient);
+
+
+  contactService.unlinkClient(selectedContact.value.contact._id, fields.clientId).then(
     (data) => {
+      // update the contact in the contacts array
       for (let i = 0; i < contacts.value.length; i++) {
         if (contacts.value[i]._id === data._id) {
           contacts.value[i] = data;
         }
       }
       reset('unLinkClientForm');
-      // find client in clients array
-      let message = `${data.name} ${data.surname} unlinked from ${selectedClient.value.label}`;
+      let message = `${data.name} ${data.surname} unlinked`;
       instance.success(message, {
-        position: "top-right",
+        position: "bottom-left",
         timeout: 5000,
         offset: "30px",
         transition: "scale",
@@ -165,7 +174,6 @@ function clickUnlink(contact) {
   linkClientForm.value = false;
   unLinkClientForm.value = true;
   createContactForm.value = false;
-  createClientForm.value = false;
 }
 
 function clickLink(contact) {
@@ -180,7 +188,6 @@ function clickLink(contact) {
   unLinkClientForm.value = false;
   linkClientForm.value = true;
   createContactForm.value = false;
-  createClientForm.value = false;
 }
 </script>
 
@@ -209,11 +216,8 @@ function clickLink(contact) {
       <FormKit id="linkClientForm" type="form" @submit="linkClient" submit-label="Link Client" :submit-attrs="{
         inputClass: 'submit-button'
       }">
-        <div id="inputFields">
-          <FormKit type="select" name="client" id="client" validation="required" label="Select Client"
-            :options="clients" />
-          <FormKit type="hidden" name="contact" id="contact" :value="selectedContact.contact._id" />
-        </div>
+        <FormKit type="select" name="clientId" id="clientId" validation="required" label="Client to link"
+          v-model="selectedClient" :options="clients" help="Select client" placeholder="Select client" />
       </FormKit>
     </div>
 
@@ -221,11 +225,8 @@ function clickLink(contact) {
       <FormKit id="unLinkClientForm" type="form" @submit="unLinkClient" submit-label="Unlink Client" :submit-attrs="{
         inputClass: 'submit-button'
       }">
-        <div id="inputFields">
-          <FormKit type="select" name="client" id="client" validation="required" label="Select Client"
-            :options="clients" />
-          <FormKit type="hidden" name="contact" id="contact" :value="selectedContact.contact._id" />
-        </div>
+        <FormKit type="select" name="clientId" id="clientId" validation="required" label="Client to unlink"
+          v-model:model-value="selectedClient" :options="clients" help="Select client" placeholder="Select client" />
       </FormKit>
     </div>
 

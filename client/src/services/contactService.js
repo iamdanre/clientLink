@@ -23,14 +23,14 @@ export async function addContact(client) {
     return response.data;
 }
 
-export async function linkClient(clientId, contactId) {
+export async function linkClient(contactId, clientId) {
     const response = await axios
-        .put(API_URL + '/contacts/linkContact', { clientId, contactId })
+        .put(API_URL + '/contacts/linkClient', { clientId, contactId })
     return response.data;
 }
 
-export async function unlinkClient(clientId, contactId) {
+export async function unlinkClient(contactId, clientId) {
     const response = await axios
-        .put(API_URL + '/contacts/unlinkContact', { clientId, contactId })
+        .put(API_URL + '/contacts/unlinkClient', { clientId, contactId })
     return response.data;
 }
