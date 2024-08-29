@@ -39,7 +39,7 @@
 
 ## About The Project
 
-Recruiting exercise for a software developer position at <a href="https://www.bcity.me/">Binary City</a>.
+Recruiting exercise for a software developer position.
 <br>
 Demo: <a href="https://youtu.be/FZKj_LVBsMo">on YouTube</a>.
 
